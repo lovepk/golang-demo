@@ -10,5 +10,5 @@ type Todo struct {
 	StartTime int64
 	EndTime int64
 	User User
-	UserID int
+	UserID uint
 }
