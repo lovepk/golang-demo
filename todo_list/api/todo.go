@@ -26,3 +26,14 @@ func ShowTodo(c *gin.Context)  {
 		c.JSON(200, res)
 	}
 }
+
+func ListTodo(c *gin.Context)  {
+	var listTodoService service.ListTodoService
+	claims,_ := utils.ParseToken(c.GetHeader("authorization"))
+	if err := c.ShouldBind(&listTodoService); err != nil {
+		c.JSON(400, err)
+	} else {
+		res := listTodoService.GetListTodo(claims.Id)
+		c.JSON(200, res)
+	}
+}

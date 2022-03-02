@@ -16,6 +16,11 @@ type ShowTodoService struct {
 	
 }
 
+type ListTodoService struct {
+	PageNum int `json:"page_num" form:"page_num"`
+	PageSize int `json:"page_size" form:"page_size"`
+}
+
 func (service *CreateTodoService) Create(id uint) serializer.Response  {
 	var user model.User
 	model.DB.First(&user, id)
@@ -53,4 +58,20 @@ func (service *ShowTodoService) GetTodoById(tid string) serializer.Response {
 		Data: serializer.BuildTodo(todo),
 		Msg: "查询成功",
 	}
+}
+
+func (service *ListTodoService) GetListTodo(uid uint) serializer.Response  {
+	var todos []model.Todo
+	var count int64 = 0
+	if service.PageSize == 0 {
+		service.PageSize = 15
+	}
+	if err := model.DB.Model(&model.Todo{}).Where("user_id=?", uid).Count(&count).Preload("User").
+		Limit(service.PageSize).Offset((service.PageNum - 1) * service.PageSize).Find(&todos).Error; err != nil {
+		return serializer.Response{
+			Status: 500,
+			Msg:    "查询失败"+err.Error(),
+		}
+	}
+	return serializer.BuildListResponse(todos, uint(count))
 }

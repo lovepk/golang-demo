@@ -21,3 +21,11 @@ func BuildTodo(todo model.Todo) Todo {
 		EndTime: todo.EndTime,
 	}
 }
+
+func BuildTodos(todos []model.Todo) (results []Todo) {
+	for _, item := range todos {
+		todo := BuildTodo(item)
+		results = append(results, todo)
+	}
+	return results
+}
