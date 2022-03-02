@@ -20,12 +20,8 @@ func CreatTodo(c *gin.Context)  {
 func ShowTodo(c *gin.Context)  {
 	var showTodoService service.ShowTodoService
 	claims,_ := utils.ParseToken(c.GetHeader("authorization"))
-	if err := c.ShouldBind(&showTodoService); err != nil {
-		c.JSON(400, err)
-	} else {
-		res := showTodoService.GetTodoById(claims.Id, c.Param("id"))
-		c.JSON(200, res)
-	}
+	res := showTodoService.GetTodoById(claims.Id, c.Param("id"))
+	c.JSON(200, res)
 }
 
 func ListTodo(c *gin.Context)  {
@@ -59,4 +55,11 @@ func SearchListTodo(c *gin.Context)  {
 		res := searchTodoService.Search(claims.Id)
 		c.JSON(200, res)
 	}
+}
+
+func DeleteTodo(c *gin.Context)  {
+	var deleteTodoService service.DeleteTodoService
+	claims, _ := utils.ParseToken(c.GetHeader("authorization"))
+	res := deleteTodoService.Delete(claims.Id, c.Param("id"))
+	c.JSON(200, res)
 }

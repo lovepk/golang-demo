@@ -33,6 +33,10 @@ type SearchTodoService struct {
 	PageSize int `json:"page_size" form:"page_size"`
 }
 
+type DeleteTodoService struct {
+	
+}
+
 func (service *CreateTodoService) Create(id uint) serializer.Response  {
 	var user model.User
 	model.DB.First(&user, id)
@@ -122,4 +126,24 @@ func (service *SearchTodoService) Search(uid uint) serializer.Response {
 		}
 	}
 	return serializer.BuildListResponse(todos, uint(count))
+}
+
+func (service *DeleteTodoService) Delete(uid uint, tid string) serializer.Response {
+	var todo model.Todo
+	if err := model.DB.Model(&model.Todo{}).Where("user_id=?", uid).First(&todo, tid).Error; err != nil {
+		return serializer.Response{
+			Status: 500,
+			Msg: "没有查到这条记录",
+		}
+	}
+	if err := model.DB.Delete(&todo).Error; err != nil {
+		return serializer.Response{
+			Status: 500,
+			Msg: "删除失败",
+		}
+	}
+	return serializer.Response{
+		Status: 200,
+		Msg:    "删除成功",
+	}
 }
