@@ -23,6 +23,8 @@ func NewRouter() *gin.Engine  {
 			authed.POST("todo", api.CreatTodo)
 			authed.GET("todo/:id", api.ShowTodo)
 			authed.GET("todos", api.ListTodo)
+			authed.PUT("todo/:id", api.UpdateTodo)
+			authed.POST("todo/search", api.SearchListTodo)
 		}
 	}
 	return r

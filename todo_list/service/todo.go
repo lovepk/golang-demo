@@ -21,6 +21,18 @@ type ListTodoService struct {
 	PageSize int `json:"page_size" form:"page_size"`
 }
 
+type UpdateTodoService struct {
+	Title string `form:"title" json:"title"`
+	Content string `form:"content" json:"content"`
+	Status int `form:"status" json:"status"`
+}
+
+type SearchTodoService struct {
+	Info string `json:"info" form:"info"`
+	PageNum int `json:"page_num" form:"page_num"`
+	PageSize int `json:"page_size" form:"page_size"`
+}
+
 func (service *CreateTodoService) Create(id uint) serializer.Response  {
 	var user model.User
 	model.DB.First(&user, id)
@@ -45,10 +57,10 @@ func (service *CreateTodoService) Create(id uint) serializer.Response  {
 	}
 }
 
-func (service *ShowTodoService) GetTodoById(tid string) serializer.Response {
+func (service *ShowTodoService) GetTodoById(uid uint, tid string) serializer.Response {
 	var todo model.Todo
-	if err := model.DB.First(&todo, tid).Error; err != nil {
-		return serializer.Response{
+	if err := model.DB.Model(&model.Todo{}).Where("user_id=?", uid).First(&todo, tid).Error; err != nil {
+		return serializer.Response {
 			Status: 500,
 			Msg: "查询失败",
 		}
@@ -67,6 +79,42 @@ func (service *ListTodoService) GetListTodo(uid uint) serializer.Response  {
 		service.PageSize = 15
 	}
 	if err := model.DB.Model(&model.Todo{}).Where("user_id=?", uid).Count(&count).Preload("User").
+		Limit(service.PageSize).Offset((service.PageNum - 1) * service.PageSize).Find(&todos).Error; err != nil {
+		return serializer.Response{
+			Status: 500,
+			Msg:    "查询失败"+err.Error(),
+		}
+	}
+	return serializer.BuildListResponse(todos, uint(count))
+}
+
+func (service UpdateTodoService) UpdateTodo(uid uint, tid string) serializer.Response {
+	var todo model.Todo
+	if err := model.DB.Model(&model.Todo{}).Where("user_id=?", uid).First(&todo, tid).Error; err != nil {
+		return serializer.Response{
+			Status: 500,
+			Msg: "没有查到这条记录",
+		}
+	}
+	todo.Title = service.Title
+	todo.Content = service.Content
+	todo.Status = uint(service.Status)
+	model.DB.Save(&todo)
+	return serializer.Response{
+		Status: 200,
+		Msg: "更新成功",
+	}
+}
+
+func (service *SearchTodoService) Search(uid uint) serializer.Response {
+	var todos []model.Todo
+	var count int64 = 0
+	if service.PageSize == 0 {
+		service.PageSize = 15
+	}
+	println(service.Info)
+	if err := model.DB.Model(&model.Todo{}).Where("user_id=?", uid).
+		Where("title LIKE ? OR content LIKE ?", "%"+service.Info+"%", "%"+service.Info+"%").Count(&count).Preload("User").
 		Limit(service.PageSize).Offset((service.PageNum - 1) * service.PageSize).Find(&todos).Error; err != nil {
 		return serializer.Response{
 			Status: 500,
