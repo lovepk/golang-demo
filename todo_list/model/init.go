@@ -23,7 +23,7 @@ func DataBase(connString string)  {
 	}
 	fmt.Println("数据库连接成功")
 	sqlDb, _ := db.DB()
-	sqlDb.SetConnMaxIdleTime(25) // 设置连接池
+	sqlDb.SetConnMaxIdleTime(25) // 设置连DB接池
 	sqlDb.SetMaxOpenConns(100) // 设置最大连接数
 	sqlDb.SetConnMaxLifetime(30 * time.Second)
 	db.AutoMigrate(&User{}, &Todo{})
